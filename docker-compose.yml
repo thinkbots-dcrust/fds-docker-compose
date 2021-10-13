@@ -1,0 +1,35 @@
+version: '3.7'
+services:
+  frontend:
+    build:
+      context: ./fds-frontend
+    ports:
+      - 3000:3000
+    environment:
+      - REACT_APP_BASE_API_URL=http://localhost:9393
+    volumes:
+      - ./fds-frontend:/fds-frontend
+  backend:
+    build:
+      context: ./fds-backend
+    ports:
+      - 9393:9393
+    command: sh -c 'npm run migrate && npm run seed && npm run start'
+    volumes:
+      - ./fds-backend:/fds-backend/
+    links:
+      - mariadb
+    depends_on:
+      - mariadb
+    env_file:
+      - ./fds-backend/dockerDev.env
+    environment:
+      - APP_ENV=development
+  mariadb:
+    image: mariadb
+    restart: always
+    volumes:
+      - ./fds-backend/db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=classmate
+      - MYSQL_DATABASE=fds_dcrust_dev
